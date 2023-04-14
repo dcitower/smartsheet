@@ -21,6 +21,17 @@ class Folder extends Resource
         $this->client = $client;
     }
 
+    public function createFolder($name): Folder
+    {
+        $response = $this->client->post("folders/$this->id/folders", [
+            'json' => [
+                'name' => $name
+            ]
+        ]);
+
+        return new self($this->client, (array)$response->result);
+    }
+
     public function createSheets(array $sheetNames, $columns = DEFAULT_COLUMNS): Folder
     {
         $sheets = collect($this->getSheets());
@@ -40,12 +51,24 @@ class Folder extends Resource
      */
     public function createSheet($name, $columns = DEFAULT_COLUMNS)
     {
-        return $this->client->post("folders/$this->id/sheets", [
+        $sheetResponse = $this->client->post("folders/$this->id/sheets", [
             'json' => [
                 'name' => $name,
                 'columns' => $columns
             ]
         ]);
+
+        if(!$sheetResponse || $sheetResponse->message != 'SUCCESS') {
+            return null;
+        }
+
+        $sheetResult = $sheetResponse->result;
+
+        if (!isset($sheetResult->rows)) {
+            $sheetResult->rows = [];
+        }
+
+        return new Sheet($this->client, (array)$sheetResult);
     }
 
     /**
