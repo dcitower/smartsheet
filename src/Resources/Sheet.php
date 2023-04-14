@@ -121,6 +121,11 @@ class Sheet extends Resource
 
         foreach ($cells as $title => $value) {
             if (is_array($value)) {
+                $newCells[] = [
+                    'columnId' => $this->getColumnId($title),
+                    ...$value
+                ];
+                /*
                 if (key_exists('formula', $value)) {
                     $newCells[] = [
                         'columnId' => $this->getColumnId($title),
@@ -132,6 +137,7 @@ class Sheet extends Resource
                         'objectValue' => $value
                     ];
                 }
+                */
             } else {
                 $newCells[] = [
                     'columnId' => $this->getColumnId($title),
@@ -350,13 +356,13 @@ class Sheet extends Resource
     public function addSummaryField(String $title, String $formula, String $type = 'TEXT_NUMBER')
     {
         $options = [
-                [
+            [
                 'title' => $title,
                 'type' => $type,
                 'formula' => $formula
             ]
         ];
-        return $this->client->post("sheets/$this->id/summary/fields", 
+        return $this->client->post("sheets/$this->id/summary/fields",
             ['json' => [...$options]]
         );
     }
@@ -365,7 +371,7 @@ class Sheet extends Resource
     {
         $summaryField = $this->getSummaryFieldByName($fieldName);
         $summaryFieldDefinition['id'] = $summaryField->id;
-        
+
         return $this->updateSummaryField($summaryFieldDefinition);
     }
 
@@ -376,7 +382,7 @@ class Sheet extends Resource
 
     public function updateSummaryFields(array $summaryFields)
     {
-        return $this->client->put("sheets/$this->id/summary/fields", 
+        return $this->client->put("sheets/$this->id/summary/fields",
             ['json' => [...$summaryFields]]
         );
     }
